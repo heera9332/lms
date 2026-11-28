@@ -1,3 +1,4 @@
+import { getEnv } from '@lms/env'
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 import { ecommercePlugin, EUR, GBP, USD } from '@payloadcms/plugin-ecommerce'
@@ -34,11 +35,14 @@ const dirname = path.dirname(filename)
 
 dotenv.config({ path: path.resolve(dirname, '../../../.env') })
 
-const siteUrl = process.env.SITE_URL || process.env.NEXT_PUBLIC_SERVER_URL || 'http://127.0.0.1:3000'
-const s3Enabled = Boolean(
-  process.env.S3_BUCKET_NAME && process.env.S3_ACCESS_KEY_ID && process.env.S3_SECRET_ACCESS_KEY,
-)
-const mailPort = Number(process.env.MAIL_PORT) || 465
+const siteUrl = getEnv('SITE_URL') || getEnv('NEXT_PUBLIC_SERVER_URL', 'http://127.0.0.1:3000')
+const s3Bucket = getEnv('S3_BUCKET_NAME', '')
+const s3AccessKeyId = getEnv('S3_ACCESS_KEY_ID', '')
+const s3SecretAccessKey = getEnv('S3_SECRET_ACCESS_KEY', '')
+const s3Endpoint = getEnv('S3_ENDPOINT_URL')
+const s3Enabled = Boolean(s3Bucket && s3AccessKeyId && s3SecretAccessKey)
+const mailHost = getEnv('MAIL_HOST')
+const mailPort = getEnv('MAIL_PORT', 465)
 
 export default buildConfig({
   admin: {
@@ -51,30 +55,30 @@ export default buildConfig({
   globals: [EmailSettings],
   editor: defaultLexical,
   email: nodemailerAdapter({
-    defaultFromAddress: process.env.MAIL_FROM_ADDRESS || 'no-reply@example.com',
-    defaultFromName: process.env.MAIL_FROM_NAME || 'LMS',
-    skipVerify: process.env.MAIL_VERIFY !== 'true',
-    ...(process.env.MAIL_HOST
+    defaultFromAddress: getEnv('MAIL_FROM_ADDRESS', 'no-reply@example.com'),
+    defaultFromName: getEnv('MAIL_FROM_NAME', 'LMS'),
+    skipVerify: !getEnv('MAIL_VERIFY', false),
+    ...(mailHost
       ? {
           transportOptions: {
-            host: process.env.MAIL_HOST,
+            host: mailHost,
             port: mailPort,
-            secure: process.env.MAIL_ENCRYPTION === 'ssl' || mailPort === 465,
+            secure: getEnv('MAIL_ENCRYPTION') === 'ssl' || mailPort === 465,
             auth: {
-              user: process.env.MAIL_USERNAME,
-              pass: process.env.MAIL_PASSWORD,
+              user: getEnv('MAIL_USERNAME'),
+              pass: getEnv('MAIL_PASSWORD'),
             },
           },
         }
       : {}),
   }),
-  secret: process.env.PAYLOAD_SECRET || '',
+  secret: getEnv('PAYLOAD_SECRET', ''),
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
   db: postgresAdapter({
     pool: {
-      connectionString: process.env.DATABASE_URL || '',
+      connectionString: getEnv('DATABASE_URL', ''),
     },
   }),
   sharp,
@@ -186,14 +190,14 @@ export default buildConfig({
           prefix: 'media',
         },
       },
-      bucket: process.env.S3_BUCKET_NAME || '',
+      bucket: s3Bucket,
       config: {
-        endpoint: process.env.S3_ENDPOINT_URL || undefined,
-        forcePathStyle: Boolean(process.env.S3_ENDPOINT_URL),
-        region: process.env.S3_REGION || 'us-east-1',
+        endpoint: s3Endpoint,
+        forcePathStyle: Boolean(s3Endpoint),
+        region: getEnv('S3_REGION', 'us-east-1'),
         credentials: {
-          accessKeyId: process.env.S3_ACCESS_KEY_ID || '',
-          secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || '',
+          accessKeyId: s3AccessKeyId,
+          secretAccessKey: s3SecretAccessKey,
         },
       },
     }),

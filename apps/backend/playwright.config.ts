@@ -1,3 +1,4 @@
+import { getEnv } from '@lms/env'
 import { defineConfig, devices } from '@playwright/test'
 
 /**
@@ -18,11 +19,11 @@ dotenv.config({ path: path.resolve(__dirname, '../../.env') })
 export default defineConfig({
   testDir: './tests/e2e',
   /* Fail the build on CI if you accidentally left test.only in the source code. */
-  forbidOnly: !!process.env.CI,
+  forbidOnly: getEnv('CI', false),
   /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
+  retries: getEnv('CI', false) ? 2 : 0,
   /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
+  workers: getEnv('CI', false) ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: 'html',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */

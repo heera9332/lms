@@ -11,9 +11,6 @@ dotenv.config({ path: path.resolve(dirname, '../../.env') })
 
 const nextConfig: NextConfig = {
   transpilePackages: ['@lms/ui'],
-  experimental: {
-    turbopackPluginRuntimeStrategy: 'forceWorkerThreads',
-  },
   images: {
     localPatterns: [
       {

@@ -1,3 +1,4 @@
+import { getEnv } from '@lms/env'
 import { convertLexicalToHTML } from '@payloadcms/richtext-lexical/html'
 import type { Payload } from 'payload'
 
@@ -47,14 +48,12 @@ export function renderEmailTemplate(args: {
   const siteTitle =
     (typeof data.site_title === 'string' && data.site_title) ||
     settings?.siteTitle ||
-    process.env.MAIL_FROM_NAME ||
-    'LMS'
+    getEnv('MAIL_FROM_NAME', 'LMS')
 
   const siteUrl =
     (typeof data.site_url === 'string' && data.site_url) ||
-    process.env.SITE_URL ||
-    process.env.NEXT_PUBLIC_SERVER_URL ||
-    'http://127.0.0.1:3000'
+    getEnv('SITE_URL') ||
+    getEnv('NEXT_PUBLIC_SERVER_URL', 'http://127.0.0.1:3000')
 
   const mergedData: EmailPlaceholderData = {
     site_title: siteTitle,
@@ -181,6 +180,7 @@ export async function sendTemplatedEmail(args: {
   })
 
   let recipients: string | string[] | undefined = to
+  const defaultFromAddress = getEnv('MAIL_FROM_ADDRESS')
   if (template.recipientType !== 'customer') {
     const configured = (template.recipients || '')
       .split(',')
@@ -188,8 +188,8 @@ export async function sendTemplatedEmail(args: {
       .filter(Boolean)
     if (configured.length > 0) {
       recipients = configured
-    } else if (!recipients && (settings?.fromAddress || process.env.MAIL_FROM_ADDRESS)) {
-      recipients = settings?.fromAddress || process.env.MAIL_FROM_ADDRESS
+    } else if (!recipients && (settings?.fromAddress || defaultFromAddress)) {
+      recipients = settings?.fromAddress || defaultFromAddress
     }
   }
 
@@ -203,8 +203,8 @@ export async function sendTemplatedEmail(args: {
     data,
   })
 
-  const fromAddress = settings?.fromAddress || process.env.MAIL_FROM_ADDRESS
-  const fromName = settings?.fromName || process.env.MAIL_FROM_NAME || 'LMS'
+  const fromAddress = settings?.fromAddress || defaultFromAddress
+  const fromName = settings?.fromName || getEnv('MAIL_FROM_NAME', 'LMS')
 
   await payload.sendEmail({
     to: recipients,
