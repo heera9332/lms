@@ -106,97 +106,12 @@ export const Courses: CollectionConfig = {
           fields: [
             {
               name: 'modules',
-              type: 'array',
+              type: 'relationship',
+              relationTo: 'course-modules',
+              hasMany: true,
               admin: {
-                initCollapsed: false,
+                description: 'Select and order the course modules for this course.',
               },
-              fields: [
-                {
-                  name: 'title',
-                  type: 'text',
-                  required: true,
-                },
-                {
-                  name: 'description',
-                  type: 'textarea',
-                },
-                {
-                  name: 'isFreePreview',
-                  type: 'checkbox',
-                  defaultValue: false,
-                },
-                {
-                  name: 'lessons',
-                  type: 'array',
-                  fields: [
-                    {
-                      name: 'title',
-                      type: 'text',
-                      required: true,
-                    },
-                    {
-                      name: 'lessonType',
-                      type: 'select',
-                      required: true,
-                      defaultValue: 'video',
-                      options: [
-                        { label: 'Video', value: 'video' },
-                        { label: 'Live Session', value: 'live' },
-                        { label: 'Text / Article', value: 'article' },
-                        { label: 'PDF / Document', value: 'pdf' },
-                        { label: 'Downloadable Resource', value: 'resource' },
-                        { label: 'Quiz', value: 'quiz' },
-                        { label: 'Assignment', value: 'assignment' },
-                        { label: 'External Link', value: 'external' },
-                      ],
-                    },
-                    {
-                      type: 'row',
-                      fields: [
-                        {
-                          name: 'durationMinutes',
-                          type: 'number',
-                          min: 0,
-                        },
-                        {
-                          name: 'isFreePreview',
-                          type: 'checkbox',
-                          defaultValue: false,
-                        },
-                      ],
-                    },
-                    {
-                      name: 'content',
-                      type: 'richText',
-                      editor: defaultLexical,
-                    },
-                    {
-                      name: 'videoUrl',
-                      type: 'text',
-                      admin: {
-                        condition: (_, siblingData) => siblingData?.lessonType === 'video',
-                      },
-                    },
-                    {
-                      name: 'resource',
-                      type: 'upload',
-                      relationTo: 'media',
-                      admin: {
-                        condition: (_, siblingData) =>
-                          siblingData?.lessonType === 'pdf' ||
-                          siblingData?.lessonType === 'resource',
-                      },
-                    },
-                    {
-                      name: 'externalUrl',
-                      type: 'text',
-                      admin: {
-                        condition: (_, siblingData) => siblingData?.lessonType === 'external',
-                      },
-                    },
-                  ],
-                },
-              ],
             },
           ],
         },

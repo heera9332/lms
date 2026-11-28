@@ -24,6 +24,8 @@ describe('LMS Backend CMS', () => {
         'pages',
         'posts',
         'courses',
+        'course-modules',
+        'lessons',
         'email-templates',
         'products',
         'variants',

@@ -20,6 +20,8 @@ import {
   publicAccess,
 } from './access'
 import { Categories } from './collections/Categories'
+import { Lessons } from './collections/courses/lessons'
+import { CourseModules } from './collections/courses/modules'
 import { Courses } from './collections/courses/schema'
 import { EmailTemplates } from './collections/EmailTemplates'
 import { Media } from './collections/Media'
@@ -52,7 +54,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Categories, Tags, Pages, Posts, Courses, EmailTemplates],
+  collections: [Users, Media, Categories, Tags, Pages, Posts, Courses, CourseModules, Lessons, EmailTemplates],
   globals: [EmailSettings],
   editor: defaultLexical,
   email: nodemailerAdapter({

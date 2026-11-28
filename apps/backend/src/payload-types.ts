@@ -79,6 +79,8 @@ export interface Config {
     pages: Page;
     posts: Post;
     courses: Course;
+    'course-modules': CourseModule;
+    lessons: Lesson;
     'email-templates': EmailTemplate;
     addresses: Address;
     variants: Variant;
@@ -109,6 +111,8 @@ export interface Config {
     pages: PagesSelect<false> | PagesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
     courses: CoursesSelect<false> | CoursesSelect<true>;
+    'course-modules': CourseModulesSelect<false> | CourseModulesSelect<true>;
+    lessons: LessonsSelect<false> | LessonsSelect<true>;
     'email-templates': EmailTemplatesSelect<false> | EmailTemplatesSelect<true>;
     addresses: AddressesSelect<false> | AddressesSelect<true>;
     variants: VariantsSelect<false> | VariantsSelect<true>;
@@ -458,41 +462,10 @@ export interface Course {
         id?: string | null;
       }[]
     | null;
-  modules?:
-    | {
-        title: string;
-        description?: string | null;
-        isFreePreview?: boolean | null;
-        lessons?:
-          | {
-              title: string;
-              lessonType: 'video' | 'live' | 'article' | 'pdf' | 'resource' | 'quiz' | 'assignment' | 'external';
-              durationMinutes?: number | null;
-              isFreePreview?: boolean | null;
-              content?: {
-                root: {
-                  type: string;
-                  children: {
-                    type: any;
-                    version: number;
-                    [k: string]: unknown;
-                  }[];
-                  direction: ('ltr' | 'rtl') | null;
-                  format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-                  indent: number;
-                  version: number;
-                };
-                [k: string]: unknown;
-              } | null;
-              videoUrl?: string | null;
-              resource?: (number | null) | Media;
-              externalUrl?: string | null;
-              id?: string | null;
-            }[]
-          | null;
-        id?: string | null;
-      }[]
-    | null;
+  /**
+   * Select and order the course modules for this course.
+   */
+  modules?: (number | CourseModule)[] | null;
   pricingType: 'free' | 'paid';
   /**
    * Linked Ecommerce product used for checkout and multi-currency pricing.
@@ -532,6 +505,80 @@ export interface Course {
   tags?: (number | Tag)[] | null;
   instructors?: (number | User)[] | null;
   featured?: boolean | null;
+  publishedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "course-modules".
+ */
+export interface CourseModule {
+  id: number;
+  title: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  description?: string | null;
+  /**
+   * Select and order the lessons / classes belonging to this module.
+   */
+  lessons?: (number | Lesson)[] | null;
+  course?: (number | null) | Course;
+  order?: number | null;
+  isFreePreview?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lessons".
+ */
+export interface Lesson {
+  id: number;
+  title: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  description?: string | null;
+  content?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Video URL or stream reference for recorded lessons.
+   */
+  videoUrl?: string | null;
+  /**
+   * Live class session URL (e.g. Google Meet link).
+   */
+  liveMeetingUrl?: string | null;
+  resource?: (number | null) | Media;
+  externalUrl?: string | null;
+  lessonType: 'video' | 'live' | 'article' | 'pdf' | 'resource' | 'quiz' | 'assignment' | 'external';
+  durationMinutes?: number | null;
+  order?: number | null;
+  isFreePreview?: boolean | null;
+  course?: (number | null) | Course;
+  module?: (number | null) | CourseModule;
+  instructor?: (number | null) | User;
   publishedAt?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -945,6 +992,14 @@ export interface PayloadLockedDocument {
         value: number | Course;
       } | null)
     | ({
+        relationTo: 'course-modules';
+        value: number | CourseModule;
+      } | null)
+    | ({
+        relationTo: 'lessons';
+        value: number | Lesson;
+      } | null)
+    | ({
         relationTo: 'email-templates';
         value: number | EmailTemplate;
       } | null)
@@ -1218,27 +1273,7 @@ export interface CoursesSelect<T extends boolean = true> {
         outcome?: T;
         id?: T;
       };
-  modules?:
-    | T
-    | {
-        title?: T;
-        description?: T;
-        isFreePreview?: T;
-        lessons?:
-          | T
-          | {
-              title?: T;
-              lessonType?: T;
-              durationMinutes?: T;
-              isFreePreview?: T;
-              content?: T;
-              videoUrl?: T;
-              resource?: T;
-              externalUrl?: T;
-              id?: T;
-            };
-        id?: T;
-      };
+  modules?: T;
   pricingType?: T;
   product?: T;
   price?: T;
@@ -1265,6 +1300,49 @@ export interface CoursesSelect<T extends boolean = true> {
   tags?: T;
   instructors?: T;
   featured?: T;
+  publishedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "course-modules_select".
+ */
+export interface CourseModulesSelect<T extends boolean = true> {
+  title?: T;
+  generateSlug?: T;
+  slug?: T;
+  description?: T;
+  lessons?: T;
+  course?: T;
+  order?: T;
+  isFreePreview?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lessons_select".
+ */
+export interface LessonsSelect<T extends boolean = true> {
+  title?: T;
+  generateSlug?: T;
+  slug?: T;
+  description?: T;
+  content?: T;
+  videoUrl?: T;
+  liveMeetingUrl?: T;
+  resource?: T;
+  externalUrl?: T;
+  lessonType?: T;
+  durationMinutes?: T;
+  order?: T;
+  isFreePreview?: T;
+  course?: T;
+  module?: T;
+  instructor?: T;
   publishedAt?: T;
   updatedAt?: T;
   createdAt?: T;
