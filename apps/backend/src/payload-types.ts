@@ -78,6 +78,7 @@ export interface Config {
     tags: Tag;
     pages: Page;
     posts: Post;
+    courses: Course;
     'email-templates': EmailTemplate;
     addresses: Address;
     variants: Variant;
@@ -107,6 +108,7 @@ export interface Config {
     tags: TagsSelect<false> | TagsSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
+    courses: CoursesSelect<false> | CoursesSelect<true>;
     'email-templates': EmailTemplatesSelect<false> | EmailTemplatesSelect<true>;
     addresses: AddressesSelect<false> | AddressesSelect<true>;
     variants: VariantsSelect<false> | VariantsSelect<true>;
@@ -407,6 +409,253 @@ export interface Post {
   _status?: ('draft' | 'published') | null;
 }
 /**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "courses".
+ */
+export interface Course {
+  id: number;
+  title: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  shortDescription?: string | null;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Optional promotional video URL for the course landing page.
+   */
+  promoVideoUrl?: string | null;
+  learningObjectives?:
+    | {
+        objective: string;
+        id?: string | null;
+      }[]
+    | null;
+  requirements?:
+    | {
+        requirement: string;
+        id?: string | null;
+      }[]
+    | null;
+  outcomes?:
+    | {
+        outcome: string;
+        id?: string | null;
+      }[]
+    | null;
+  modules?:
+    | {
+        title: string;
+        description?: string | null;
+        isFreePreview?: boolean | null;
+        lessons?:
+          | {
+              title: string;
+              lessonType: 'video' | 'live' | 'article' | 'pdf' | 'resource' | 'quiz' | 'assignment' | 'external';
+              durationMinutes?: number | null;
+              isFreePreview?: boolean | null;
+              content?: {
+                root: {
+                  type: string;
+                  children: {
+                    type: any;
+                    version: number;
+                    [k: string]: unknown;
+                  }[];
+                  direction: ('ltr' | 'rtl') | null;
+                  format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                  indent: number;
+                  version: number;
+                };
+                [k: string]: unknown;
+              } | null;
+              videoUrl?: string | null;
+              resource?: (number | null) | Media;
+              externalUrl?: string | null;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  pricingType: 'free' | 'paid';
+  /**
+   * Linked Ecommerce product used for checkout and multi-currency pricing.
+   */
+  product?: (number | null) | Product;
+  /**
+   * Monetary price in minor units (e.g. cents/paise).
+   */
+  price?: number | null;
+  discountPrice?: number | null;
+  currency?: ('USD' | 'INR' | 'EUR' | 'GBP') | null;
+  accessModel: 'lifetime' | 'time-limited' | 'batch' | 'subscription';
+  /**
+   * Number of days a student retains access after enrollment.
+   */
+  accessDurationDays?: number | null;
+  dripEnabled?: boolean | null;
+  requireSequentialCompletion?: boolean | null;
+  /**
+   * Leave empty for unlimited enrollments.
+   */
+  maxEnrollments?: number | null;
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+  };
+  thumbnail?: (number | null) | Media;
+  courseType: 'recorded' | 'live' | 'hybrid';
+  difficultyLevel?: ('all-levels' | 'beginner' | 'intermediate' | 'advanced') | null;
+  language?: string | null;
+  estimatedDurationMinutes?: number | null;
+  category?: (number | null) | Category;
+  tags?: (number | Tag)[] | null;
+  instructors?: (number | User)[] | null;
+  featured?: boolean | null;
+  publishedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "products".
+ */
+export interface Product {
+  id: number;
+  title: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  gallery?: (number | Media)[] | null;
+  categories?: (number | Category)[] | null;
+  inventory?: number | null;
+  enableVariants?: boolean | null;
+  variantTypes?: (number | VariantType)[] | null;
+  variants?: {
+    docs?: (number | Variant)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  priceInUSDEnabled?: boolean | null;
+  priceInUSD?: number | null;
+  priceInINREnabled?: boolean | null;
+  priceInINR?: number | null;
+  priceInEUREnabled?: boolean | null;
+  priceInEUR?: number | null;
+  priceInGBPEnabled?: boolean | null;
+  priceInGBP?: number | null;
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+  };
+  updatedAt: string;
+  createdAt: string;
+  deletedAt?: string | null;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "variantTypes".
+ */
+export interface VariantType {
+  id: number;
+  label: string;
+  name: string;
+  options?: {
+    docs?: (number | VariantOption)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  updatedAt: string;
+  createdAt: string;
+  deletedAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "variantOptions".
+ */
+export interface VariantOption {
+  id: number;
+  _variantOptions_options_order?: string | null;
+  variantType: number | VariantType;
+  label: string;
+  /**
+   * should be defaulted or dynamic based on label
+   */
+  value: string;
+  updatedAt: string;
+  createdAt: string;
+  deletedAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "variants".
+ */
+export interface Variant {
+  id: number;
+  /**
+   * Used for administrative purposes, not shown to customers. This is populated by default.
+   */
+  title?: string | null;
+  product: number | Product;
+  options: (number | VariantOption)[];
+  inventory?: number | null;
+  priceInUSDEnabled?: boolean | null;
+  priceInUSD?: number | null;
+  priceInINREnabled?: boolean | null;
+  priceInINR?: number | null;
+  priceInEUREnabled?: boolean | null;
+  priceInEUR?: number | null;
+  priceInGBPEnabled?: boolean | null;
+  priceInGBP?: number | null;
+  updatedAt: string;
+  createdAt: string;
+  deletedAt?: string | null;
+  _status?: ('draft' | 'published') | null;
+}
+/**
  * WooCommerce-style transactional email templates. Use {placeholder} or {{placeholder}} tokens in subject, heading, body, and additional content.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -546,124 +795,6 @@ export interface Address {
   phone?: string | null;
   updatedAt: string;
   createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "variants".
- */
-export interface Variant {
-  id: number;
-  /**
-   * Used for administrative purposes, not shown to customers. This is populated by default.
-   */
-  title?: string | null;
-  product: number | Product;
-  options: (number | VariantOption)[];
-  inventory?: number | null;
-  priceInUSDEnabled?: boolean | null;
-  priceInUSD?: number | null;
-  priceInINREnabled?: boolean | null;
-  priceInINR?: number | null;
-  priceInEUREnabled?: boolean | null;
-  priceInEUR?: number | null;
-  priceInGBPEnabled?: boolean | null;
-  priceInGBP?: number | null;
-  updatedAt: string;
-  createdAt: string;
-  deletedAt?: string | null;
-  _status?: ('draft' | 'published') | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "products".
- */
-export interface Product {
-  id: number;
-  title: string;
-  /**
-   * When enabled, the slug will auto-generate from the title field on save and autosave.
-   */
-  generateSlug?: boolean | null;
-  slug: string;
-  description?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
-  gallery?: (number | Media)[] | null;
-  categories?: (number | Category)[] | null;
-  inventory?: number | null;
-  enableVariants?: boolean | null;
-  variantTypes?: (number | VariantType)[] | null;
-  variants?: {
-    docs?: (number | Variant)[];
-    hasNextPage?: boolean;
-    totalDocs?: number;
-  };
-  priceInUSDEnabled?: boolean | null;
-  priceInUSD?: number | null;
-  priceInINREnabled?: boolean | null;
-  priceInINR?: number | null;
-  priceInEUREnabled?: boolean | null;
-  priceInEUR?: number | null;
-  priceInGBPEnabled?: boolean | null;
-  priceInGBP?: number | null;
-  meta?: {
-    title?: string | null;
-    description?: string | null;
-    /**
-     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
-     */
-    image?: (number | null) | Media;
-  };
-  updatedAt: string;
-  createdAt: string;
-  deletedAt?: string | null;
-  _status?: ('draft' | 'published') | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "variantTypes".
- */
-export interface VariantType {
-  id: number;
-  label: string;
-  name: string;
-  options?: {
-    docs?: (number | VariantOption)[];
-    hasNextPage?: boolean;
-    totalDocs?: number;
-  };
-  updatedAt: string;
-  createdAt: string;
-  deletedAt?: string | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "variantOptions".
- */
-export interface VariantOption {
-  id: number;
-  _variantOptions_options_order?: string | null;
-  variantType: number | VariantType;
-  label: string;
-  /**
-   * should be defaulted or dynamic based on label
-   */
-  value: string;
-  updatedAt: string;
-  createdAt: string;
-  deletedAt?: string | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -808,6 +939,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'posts';
         value: number | Post;
+      } | null)
+    | ({
+        relationTo: 'courses';
+        value: number | Course;
       } | null)
     | ({
         relationTo: 'email-templates';
@@ -1050,6 +1185,87 @@ export interface PostsSelect<T extends boolean = true> {
         description?: T;
         image?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "courses_select".
+ */
+export interface CoursesSelect<T extends boolean = true> {
+  title?: T;
+  generateSlug?: T;
+  slug?: T;
+  shortDescription?: T;
+  description?: T;
+  promoVideoUrl?: T;
+  learningObjectives?:
+    | T
+    | {
+        objective?: T;
+        id?: T;
+      };
+  requirements?:
+    | T
+    | {
+        requirement?: T;
+        id?: T;
+      };
+  outcomes?:
+    | T
+    | {
+        outcome?: T;
+        id?: T;
+      };
+  modules?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        isFreePreview?: T;
+        lessons?:
+          | T
+          | {
+              title?: T;
+              lessonType?: T;
+              durationMinutes?: T;
+              isFreePreview?: T;
+              content?: T;
+              videoUrl?: T;
+              resource?: T;
+              externalUrl?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  pricingType?: T;
+  product?: T;
+  price?: T;
+  discountPrice?: T;
+  currency?: T;
+  accessModel?: T;
+  accessDurationDays?: T;
+  dripEnabled?: T;
+  requireSequentialCompletion?: T;
+  maxEnrollments?: T;
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
+  thumbnail?: T;
+  courseType?: T;
+  difficultyLevel?: T;
+  language?: T;
+  estimatedDurationMinutes?: T;
+  category?: T;
+  tags?: T;
+  instructors?: T;
+  featured?: T;
+  publishedAt?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;

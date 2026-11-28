@@ -29,7 +29,7 @@ export const defaultLexical = lexicalEditor({
     UnorderedListFeature(),
     BlockquoteFeature(),
     LinkFeature({
-      enabledCollections: ['pages', 'posts', 'products', 'media'],
+      enabledCollections: ['pages', 'posts', 'courses', 'products', 'media'],
     }),
     InlineToolbarFeature(),
     FixedToolbarFeature(),

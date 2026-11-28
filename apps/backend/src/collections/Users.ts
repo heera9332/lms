@@ -54,6 +54,9 @@ export const Users: CollectionConfig = {
           name: "avatar",
           type: "upload",
           relationTo: "media",
+          admin: {
+            position: "sidebar",
+          }
         },
         {
           name: "phone",

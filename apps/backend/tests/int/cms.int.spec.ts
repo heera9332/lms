@@ -23,6 +23,7 @@ describe('LMS Backend CMS', () => {
         'tags',
         'pages',
         'posts',
+        'courses',
         'email-templates',
         'products',
         'variants',

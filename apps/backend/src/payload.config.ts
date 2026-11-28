@@ -20,6 +20,7 @@ import {
   publicAccess,
 } from './access'
 import { Categories } from './collections/Categories'
+import { Courses } from './collections/courses/schema'
 import { EmailTemplates } from './collections/EmailTemplates'
 import { Media } from './collections/Media'
 import { Pages } from './collections/Pages'
@@ -51,7 +52,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Categories, Tags, Pages, Posts, EmailTemplates],
+  collections: [Users, Media, Categories, Tags, Pages, Posts, Courses, EmailTemplates],
   globals: [EmailSettings],
   editor: defaultLexical,
   email: nodemailerAdapter({
@@ -165,7 +166,7 @@ export default buildConfig({
       transactions: true,
     }),
     seoPlugin({
-      collections: ['pages', 'posts', 'products'],
+      collections: ['pages', 'posts', 'courses', 'products'],
       uploadsCollection: 'media',
       tabbedUI: true,
       generateTitle: ({ doc }) => {
@@ -173,8 +174,10 @@ export default buildConfig({
         return title ? `${title} | LMS` : 'LMS'
       },
       generateDescription: ({ doc }) => {
-        const record = doc as { excerpt?: string; meta?: { description?: string } } | undefined
-        return record?.excerpt || record?.meta?.description || ''
+        const record = doc as
+          | { excerpt?: string; shortDescription?: string; meta?: { description?: string } }
+          | undefined
+        return record?.excerpt || record?.shortDescription || record?.meta?.description || ''
       },
       generateURL: ({ doc, collectionConfig }) => {
         const slug = (doc as { slug?: string } | undefined)?.slug || ''
