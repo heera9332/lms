@@ -1,0 +1,31 @@
+{
+  "name": "lms",
+  "private": true,
+  "packageManager": "bun@1.4.4",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "check-types": "turbo run check-types",
+    "generate:types": "turbo run generate:types",
+    "generate:importmap": "turbo run generate:importmap",
+    "format": "prettier --write \"**/*.{ts,tsx,md,json}\""
+  },
+  "devDependencies": {
+    "prettier": "^3.4.2",
+    "turbo": "^2.11.13",
+    "typescript": "5.7.3"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "trustedDependencies": [
+    "sharp",
+    "esbuild",
+    "unrs-resolver"
+  ],
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
+}
