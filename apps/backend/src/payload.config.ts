@@ -215,7 +215,7 @@ export default buildConfig({
             ...defaultCollection.fields,
           ],
         }),
-        variants: true,
+        variants: false,
       },
       transactions: true,
     }),

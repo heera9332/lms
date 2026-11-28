@@ -145,38 +145,6 @@ export const Courses: CollectionConfig = {
               },
             },
             {
-              type: 'row',
-              admin: {
-                condition: (data) => data?.pricingType === 'paid',
-              },
-              fields: [
-                {
-                  name: 'price',
-                  type: 'number',
-                  min: 0,
-                  admin: {
-                    description: 'Monetary price in minor units (e.g. cents/paise).',
-                  },
-                },
-                {
-                  name: 'discountPrice',
-                  type: 'number',
-                  min: 0,
-                },
-                {
-                  name: 'currency',
-                  type: 'select',
-                  defaultValue: 'USD',
-                  options: [
-                    { label: 'USD ($)', value: 'USD' },
-                    { label: 'INR (₹)', value: 'INR' },
-                    { label: 'EUR (€)', value: 'EUR' },
-                    { label: 'GBP (£)', value: 'GBP' },
-                  ],
-                },
-              ],
-            },
-            {
               name: 'accessModel',
               type: 'select',
               required: true,

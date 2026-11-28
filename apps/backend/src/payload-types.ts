@@ -84,9 +84,6 @@ export interface Config {
     lessons: Lesson;
     'email-templates': EmailTemplate;
     addresses: Address;
-    variants: Variant;
-    variantTypes: VariantType;
-    variantOptions: VariantOption;
     products: Product;
     carts: Cart;
     orders: Order;
@@ -96,14 +93,7 @@ export interface Config {
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
-  collectionsJoins: {
-    variantTypes: {
-      options: 'variantOptions';
-    };
-    products: {
-      variants: 'variants';
-    };
-  };
+  collectionsJoins: {};
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
@@ -117,9 +107,6 @@ export interface Config {
     lessons: LessonsSelect<false> | LessonsSelect<true>;
     'email-templates': EmailTemplatesSelect<false> | EmailTemplatesSelect<true>;
     addresses: AddressesSelect<false> | AddressesSelect<true>;
-    variants: VariantsSelect<false> | VariantsSelect<true>;
-    variantTypes: VariantTypesSelect<false> | VariantTypesSelect<true>;
-    variantOptions: VariantOptionsSelect<false> | VariantOptionsSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
     carts: CartsSelect<false> | CartsSelect<true>;
     orders: OrdersSelect<false> | OrdersSelect<true>;
@@ -161,9 +148,6 @@ export interface Config {
       orders: Order;
       products: Product;
       transactions: Transaction;
-      variantOptions: VariantOption;
-      variants: Variant;
-      variantTypes: VariantType;
     };
   };
 }
@@ -503,12 +487,6 @@ export interface Course {
    * Linked Ecommerce product used for checkout and multi-currency pricing.
    */
   product?: (number | null) | Product;
-  /**
-   * Monetary price in minor units (e.g. cents/paise).
-   */
-  price?: number | null;
-  discountPrice?: number | null;
-  currency?: ('USD' | 'INR' | 'EUR' | 'GBP') | null;
   accessModel: 'lifetime' | 'time-limited' | 'batch' | 'subscription';
   /**
    * Number of days a student retains access after enrollment.
@@ -678,13 +656,6 @@ export interface Product {
   gallery?: (number | Media)[] | null;
   categories?: (number | Category)[] | null;
   inventory?: number | null;
-  enableVariants?: boolean | null;
-  variantTypes?: (number | VariantType)[] | null;
-  variants?: {
-    docs?: (number | Variant)[];
-    hasNextPage?: boolean;
-    totalDocs?: number;
-  };
   priceInUSDEnabled?: boolean | null;
   priceInUSD?: number | null;
   priceInINREnabled?: boolean | null;
@@ -701,66 +672,6 @@ export interface Product {
      */
     image?: (number | null) | Media;
   };
-  updatedAt: string;
-  createdAt: string;
-  deletedAt?: string | null;
-  _status?: ('draft' | 'published') | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "variantTypes".
- */
-export interface VariantType {
-  id: number;
-  label: string;
-  name: string;
-  options?: {
-    docs?: (number | VariantOption)[];
-    hasNextPage?: boolean;
-    totalDocs?: number;
-  };
-  updatedAt: string;
-  createdAt: string;
-  deletedAt?: string | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "variantOptions".
- */
-export interface VariantOption {
-  id: number;
-  _variantOptions_options_order?: string | null;
-  variantType: number | VariantType;
-  label: string;
-  /**
-   * should be defaulted or dynamic based on label
-   */
-  value: string;
-  updatedAt: string;
-  createdAt: string;
-  deletedAt?: string | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "variants".
- */
-export interface Variant {
-  id: number;
-  /**
-   * Used for administrative purposes, not shown to customers. This is populated by default.
-   */
-  title?: string | null;
-  product: number | Product;
-  options: (number | VariantOption)[];
-  inventory?: number | null;
-  priceInUSDEnabled?: boolean | null;
-  priceInUSD?: number | null;
-  priceInINREnabled?: boolean | null;
-  priceInINR?: number | null;
-  priceInEUREnabled?: boolean | null;
-  priceInEUR?: number | null;
-  priceInGBPEnabled?: boolean | null;
-  priceInGBP?: number | null;
   updatedAt: string;
   createdAt: string;
   deletedAt?: string | null;
@@ -916,7 +827,6 @@ export interface Cart {
   items?:
     | {
         product?: (number | null) | Product;
-        variant?: (number | null) | Variant;
         quantity: number;
         id?: string | null;
       }[]
@@ -939,7 +849,6 @@ export interface Order {
   items?:
     | {
         product?: (number | null) | Product;
-        variant?: (number | null) | Variant;
         quantity: number;
         id?: string | null;
       }[]
@@ -975,7 +884,6 @@ export interface Transaction {
   items?:
     | {
         product?: (number | null) | Product;
-        variant?: (number | null) | Variant;
         quantity: number;
         id?: string | null;
       }[]
@@ -1074,18 +982,6 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'addresses';
         value: number | Address;
-      } | null)
-    | ({
-        relationTo: 'variants';
-        value: number | Variant;
-      } | null)
-    | ({
-        relationTo: 'variantTypes';
-        value: number | VariantType;
-      } | null)
-    | ({
-        relationTo: 'variantOptions';
-        value: number | VariantOption;
       } | null)
     | ({
         relationTo: 'products';
@@ -1368,9 +1264,6 @@ export interface CoursesSelect<T extends boolean = true> {
   modules?: T;
   pricingType?: T;
   product?: T;
-  price?: T;
-  discountPrice?: T;
-  currency?: T;
   accessModel?: T;
   accessDurationDays?: T;
   dripEnabled?: T;
@@ -1511,53 +1404,6 @@ export interface AddressesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "variants_select".
- */
-export interface VariantsSelect<T extends boolean = true> {
-  title?: T;
-  product?: T;
-  options?: T;
-  inventory?: T;
-  priceInUSDEnabled?: T;
-  priceInUSD?: T;
-  priceInINREnabled?: T;
-  priceInINR?: T;
-  priceInEUREnabled?: T;
-  priceInEUR?: T;
-  priceInGBPEnabled?: T;
-  priceInGBP?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  deletedAt?: T;
-  _status?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "variantTypes_select".
- */
-export interface VariantTypesSelect<T extends boolean = true> {
-  label?: T;
-  name?: T;
-  options?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  deletedAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "variantOptions_select".
- */
-export interface VariantOptionsSelect<T extends boolean = true> {
-  _variantOptions_options_order?: T;
-  variantType?: T;
-  label?: T;
-  value?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  deletedAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "products_select".
  */
 export interface ProductsSelect<T extends boolean = true> {
@@ -1568,9 +1414,6 @@ export interface ProductsSelect<T extends boolean = true> {
   gallery?: T;
   categories?: T;
   inventory?: T;
-  enableVariants?: T;
-  variantTypes?: T;
-  variants?: T;
   priceInUSDEnabled?: T;
   priceInUSD?: T;
   priceInINREnabled?: T;
@@ -1600,7 +1443,6 @@ export interface CartsSelect<T extends boolean = true> {
     | T
     | {
         product?: T;
-        variant?: T;
         quantity?: T;
         id?: T;
       };
@@ -1622,7 +1464,6 @@ export interface OrdersSelect<T extends boolean = true> {
     | T
     | {
         product?: T;
-        variant?: T;
         quantity?: T;
         id?: T;
       };
@@ -1659,7 +1500,6 @@ export interface TransactionsSelect<T extends boolean = true> {
     | T
     | {
         product?: T;
-        variant?: T;
         quantity?: T;
         id?: T;
       };

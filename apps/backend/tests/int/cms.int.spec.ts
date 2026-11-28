@@ -29,15 +29,15 @@ describe('LMS Backend CMS', () => {
         'lessons',
         'email-templates',
         'products',
-        'variants',
-        'variantTypes',
-        'variantOptions',
         'carts',
         'orders',
         'addresses',
         'transactions',
       ]),
     )
+    expect(slugs).not.toContain('variants')
+    expect(slugs).not.toContain('variantTypes')
+    expect(slugs).not.toContain('variantOptions')
     expect(payload.email.name).toBe('nodemailer')
     expect(payload.collections.videos.config.upload?.mimeTypes).toEqual(['video/*'])
     expect(payload.config.localization).toBeTruthy()
