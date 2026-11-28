@@ -2,6 +2,9 @@ import { describe, expect, it, vi } from 'vitest'
 
 import {
   buildCalendarEventBody,
+  getGoogleAuthMode,
+  isGoogleCalendarConfigured,
+  normalizePrivateKey,
   syncLessonMeetEvent,
   type CalendarApiClient,
 } from '@/lib/google/calendar'
@@ -110,5 +113,32 @@ describe('Google Meet & Calendar integration', () => {
     })
     expect(cancelled.cancelled).toBe(true)
     expect(cancelled.googleEventId).toBeNull()
+  })
+
+  it('ignores placeholder env credentials and validates PEM private keys', () => {
+    const original = { ...process.env }
+    try {
+      process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL = '...'
+      process.env.GOOGLE_PRIVATE_KEY = '-----BEGIN PRIVATE KEY-----\\n...\\n-----END PRIVATE KEY-----\\n'
+      process.env.GOOGLE_CLIENT_ID = 'client-id'
+      process.env.GOOGLE_CLIENT_SECRET = 'client-secret'
+      process.env.GOOGLE_REFRESH_TOKEN = '...'
+
+      expect(normalizePrivateKey(process.env.GOOGLE_PRIVATE_KEY)).toBeUndefined()
+      expect(getGoogleAuthMode()).toBe('none')
+      expect(isGoogleCalendarConfigured()).toBe(false)
+
+      expect(getGoogleAuthMode({ refreshToken: 'real-refresh-token', enabled: true })).toBe('oauth2')
+      expect(
+        isGoogleCalendarConfigured({ refreshToken: 'real-refresh-token', enabled: true }),
+      ).toBe(true)
+
+      const validDummyKey = `-----BEGIN PRIVATE KEY-----\\n${'A'.repeat(64)}\\n-----END PRIVATE KEY-----\\n`
+      const normalized = normalizePrivateKey(validDummyKey)
+      expect(normalized).toContain('-----BEGIN PRIVATE KEY-----\n')
+      expect(normalized).toContain('\n-----END PRIVATE KEY-----\n')
+    } finally {
+      process.env = original
+    }
   })
 })

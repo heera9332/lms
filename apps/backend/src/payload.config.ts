@@ -35,6 +35,7 @@ import { EmailSettings } from './globals/EmailSettings'
 import { GoogleCalendarSettings } from './globals/GoogleCalendarSettings'
 import { seedDefaultEmailTemplates } from './lib/email/defaultTemplates'
 import { createGoogleOAuthUrl, exchangeGoogleOAuthCode } from './lib/google/calendar'
+import { DEFAULT_LOCALE, SUPPORTED_LOCALES } from './lib/localization'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -59,6 +60,11 @@ export default buildConfig({
   },
   collections: [Users, Media, Videos, Categories, Tags, Pages, Posts, Courses, CourseModules, Lessons, EmailTemplates],
   globals: [EmailSettings, GoogleCalendarSettings],
+  localization: {
+    locales: [...SUPPORTED_LOCALES],
+    defaultLocale: DEFAULT_LOCALE,
+    fallback: true,
+  },
   endpoints: [
     {
       path: '/google/oauth/url',
@@ -69,6 +75,11 @@ export default buildConfig({
         }
         try {
           const url = createGoogleOAuthUrl()
+          const accept = req.headers.get('accept') || ''
+          const reqUrl = new URL(req.url || siteUrl)
+          if (reqUrl.searchParams.get('format') !== 'json' && accept.includes('text/html')) {
+            return Response.redirect(url, 302)
+          }
           return Response.json({ url })
         } catch (err) {
           const message = err instanceof Error ? err.message : 'Google OAuth2 is not configured.'
@@ -175,6 +186,7 @@ export default buildConfig({
               name: 'title',
               type: 'text',
               required: true,
+              localized: true,
             },
             slugField({
               useAsSlug: 'title',
@@ -183,6 +195,7 @@ export default buildConfig({
               name: 'description',
               type: 'richText',
               editor: defaultLexical,
+              localized: true,
             },
             {
               name: 'gallery',
@@ -220,11 +233,12 @@ export default buildConfig({
           | undefined
         return record?.excerpt || record?.shortDescription || record?.meta?.description || ''
       },
-      generateURL: ({ doc, collectionConfig }) => {
+      generateURL: ({ doc, collectionConfig, locale }) => {
         const slug = (doc as { slug?: string } | undefined)?.slug || ''
-        if (!slug) return siteUrl
-        if (collectionConfig?.slug === 'pages') return `${siteUrl}/${slug}`
-        return `${siteUrl}/${collectionConfig?.slug || 'pages'}/${slug}`
+        const prefix = locale && locale !== DEFAULT_LOCALE ? `/${locale}` : ''
+        if (!slug) return `${siteUrl}${prefix}`
+        if (collectionConfig?.slug === 'pages') return `${siteUrl}${prefix}/${slug}`
+        return `${siteUrl}${prefix}/${collectionConfig?.slug || 'pages'}/${slug}`
       },
     }),
     s3Storage({

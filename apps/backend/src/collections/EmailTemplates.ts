@@ -38,6 +38,7 @@ export const EmailTemplates: CollectionConfig = {
       name: 'name',
       type: 'text',
       required: true,
+      localized: true,
     },
     {
       name: 'slug',
@@ -106,11 +107,13 @@ export const EmailTemplates: CollectionConfig = {
     {
       name: 'description',
       type: 'textarea',
+      localized: true,
     },
     {
       name: 'subject',
       type: 'text',
       required: true,
+      localized: true,
       admin: {
         description: 'Supports placeholders such as [{site_title}]: New order #{order_number}',
       },
@@ -119,6 +122,7 @@ export const EmailTemplates: CollectionConfig = {
       name: 'heading',
       type: 'text',
       required: true,
+      localized: true,
       admin: {
         description: 'Email header banner title. Supports placeholders such as New Order: #{order_number}',
       },
@@ -127,6 +131,7 @@ export const EmailTemplates: CollectionConfig = {
       name: 'body',
       type: 'richText',
       editor: defaultLexical,
+      localized: true,
       admin: {
         description:
           'Main email content. Supports placeholders like {customer_name}, {order_number}, {order_date}, {order_total}, {order_items_table}, {billing_address}, {reset_url}.',
@@ -135,6 +140,7 @@ export const EmailTemplates: CollectionConfig = {
     {
       name: 'additionalContent',
       type: 'textarea',
+      localized: true,
       defaultValue: 'Thanks for using {site_title}!',
       admin: {
         description: 'Footer note shown below the main email content. Supports placeholders.',

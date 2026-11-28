@@ -17,11 +17,13 @@ export const EmailSettings: GlobalConfig = {
       name: 'siteTitle',
       type: 'text',
       defaultValue: 'LMS',
+      localized: true,
     },
     {
       name: 'fromName',
       type: 'text',
       defaultValue: 'LMS',
+      localized: true,
     },
     {
       name: 'fromAddress',
@@ -36,6 +38,7 @@ export const EmailSettings: GlobalConfig = {
       name: 'footerText',
       type: 'textarea',
       defaultValue: '{site_title} — Powered by Payload CMS',
+      localized: true,
     },
     {
       type: 'row',

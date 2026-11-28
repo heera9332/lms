@@ -208,6 +208,7 @@ export async function seedDefaultEmailTemplates(payload: Payload): Promise<void>
       try {
         await payload.create({
           collection: 'email-templates',
+          locale: 'en',
           data: template,
           overrideAccess: true,
         })

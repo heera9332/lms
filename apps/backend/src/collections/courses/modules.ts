@@ -30,6 +30,7 @@ export const CourseModules: CollectionConfig = {
       name: 'title',
       type: 'text',
       required: true,
+      localized: true,
     },
     slugField({
       useAsSlug: 'title',
@@ -37,6 +38,7 @@ export const CourseModules: CollectionConfig = {
     {
       name: 'description',
       type: 'textarea',
+      localized: true,
     },
     {
       name: 'lessons',

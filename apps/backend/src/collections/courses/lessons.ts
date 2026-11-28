@@ -299,6 +299,7 @@ export const Lessons: CollectionConfig = {
       name: 'title',
       type: 'text',
       required: true,
+      localized: true,
     },
     slugField({
       useAsSlug: 'title',
@@ -306,11 +307,13 @@ export const Lessons: CollectionConfig = {
     {
       name: 'description',
       type: 'textarea',
+      localized: true,
     },
     {
       name: 'content',
       type: 'richText',
       editor: defaultLexical,
+      localized: true,
     },
     {
       name: 'videoSource',

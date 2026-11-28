@@ -49,9 +49,41 @@ export type SyncLessonMeetResult = {
   lastSyncedAt?: string
 }
 
+function isRealEnvValue(value?: string | null): value is string {
+  if (!value) return false
+  const trimmed = value.trim()
+  return trimmed.length > 0 && trimmed !== '...'
+}
+
+export function normalizePrivateKey(rawKey?: string | null): string | undefined {
+  if (!isRealEnvValue(rawKey)) return undefined
+
+  let normalized = rawKey.trim()
+  if (
+    (normalized.startsWith('"') && normalized.endsWith('"')) ||
+    (normalized.startsWith("'") && normalized.endsWith("'"))
+  ) {
+    normalized = normalized.slice(1, -1)
+  }
+
+  normalized = normalized.replace(/\\r\\n/g, '\n').replace(/\\n/g, '\n').replace(/\r\n/g, '\n').trim()
+
+  const match = normalized.match(
+    /-----BEGIN ([A-Z0-9 ]*PRIVATE KEY)-----\s*([\s\S]+?)\s*-----END \1-----/,
+  )
+  if (!match) return undefined
+
+  const body = match[2].replace(/\s+/g, '')
+  if (!body || body === '...' || !/^[A-Za-z0-9+/=]+$/.test(body) || body.length < 64) {
+    return undefined
+  }
+
+  return `${normalized}\n`
+}
+
 function getOAuthRedirectUri(): string {
   const configured = getEnv('GOOGLE_REDIRECT_URI')
-  if (configured) return configured
+  if (isRealEnvValue(configured)) return configured
   const baseUrl = getEnv('SITE_URL') || getEnv('NEXT_PUBLIC_SERVER_URL', 'http://127.0.0.1:3000')
   return `${baseUrl.replace(/\/$/, '')}/api/google/oauth/callback`
 }
@@ -60,15 +92,20 @@ export function getGoogleAuthMode(
   settings?: Partial<GoogleCalendarSetting> | null,
 ): 'service_account' | 'oauth2' | 'none' {
   const serviceEmail = getEnv('GOOGLE_SERVICE_ACCOUNT_EMAIL')
-  const privateKey = getEnv('GOOGLE_PRIVATE_KEY')
-  if (serviceEmail && privateKey) {
+  const privateKey = normalizePrivateKey(getEnv('GOOGLE_PRIVATE_KEY'))
+  if (isRealEnvValue(serviceEmail) && serviceEmail.includes('@') && privateKey) {
     return 'service_account'
   }
 
   const clientId = getEnv('GOOGLE_CLIENT_ID')
   const clientSecret = getEnv('GOOGLE_CLIENT_SECRET')
-  const refreshToken = getEnv('GOOGLE_REFRESH_TOKEN') || settings?.refreshToken || undefined
-  if (clientId && clientSecret && refreshToken) {
+  const envRefreshToken = getEnv('GOOGLE_REFRESH_TOKEN')
+  const refreshToken = isRealEnvValue(envRefreshToken)
+    ? envRefreshToken
+    : isRealEnvValue(settings?.refreshToken)
+      ? settings.refreshToken
+      : undefined
+  if (isRealEnvValue(clientId) && isRealEnvValue(clientSecret) && refreshToken) {
     return 'oauth2'
   }
 
@@ -81,15 +118,17 @@ export function isGoogleCalendarConfigured(
   const mode = getGoogleAuthMode(settings)
   if (mode === 'none') return false
   if (settings && settings.enabled === false) {
-    // Allow explicit env-only configurations when global hasn't been toggled off after setup,
-    // or require enabled=true when configured via global refreshToken.
-    const hasEnvCredentials = Boolean(
-      (getEnv('GOOGLE_SERVICE_ACCOUNT_EMAIL') && getEnv('GOOGLE_PRIVATE_KEY')) ||
-        (getEnv('GOOGLE_CLIENT_ID') &&
-          getEnv('GOOGLE_CLIENT_SECRET') &&
-          getEnv('GOOGLE_REFRESH_TOKEN')),
+    const serviceEmail = getEnv('GOOGLE_SERVICE_ACCOUNT_EMAIL')
+    const privateKey = normalizePrivateKey(getEnv('GOOGLE_PRIVATE_KEY'))
+    const hasServiceAccount = Boolean(
+      isRealEnvValue(serviceEmail) && serviceEmail.includes('@') && privateKey,
     )
-    return hasEnvCredentials
+    const hasOAuthEnv = Boolean(
+      isRealEnvValue(getEnv('GOOGLE_CLIENT_ID')) &&
+        isRealEnvValue(getEnv('GOOGLE_CLIENT_SECRET')) &&
+        isRealEnvValue(getEnv('GOOGLE_REFRESH_TOKEN')),
+    )
+    return hasServiceAccount || hasOAuthEnv
   }
   return true
 }
@@ -163,9 +202,10 @@ export function createGoogleCalendarClient(
 
   if (mode === 'service_account') {
     const email = getEnv('GOOGLE_SERVICE_ACCOUNT_EMAIL', '')
-    const rawKey = getEnv('GOOGLE_PRIVATE_KEY', '')
-    const privateKey = rawKey.replace(/\\n/g, '\n')
-    const subject = getEnv('GOOGLE_IMPERSONATE_EMAIL')
+    const privateKey = normalizePrivateKey(getEnv('GOOGLE_PRIVATE_KEY')) || ''
+    const rawSubject = getEnv('GOOGLE_IMPERSONATE_EMAIL')
+    const subject =
+      isRealEnvValue(rawSubject) && rawSubject.includes('@') ? rawSubject : undefined
 
     const jwt = new google.auth.JWT({
       email,
@@ -179,7 +219,12 @@ export function createGoogleCalendarClient(
 
   if (mode === 'oauth2') {
     const oauth2Client = createGoogleOAuthClient()
-    const refreshToken = getEnv('GOOGLE_REFRESH_TOKEN') || settings?.refreshToken || ''
+    const envRefreshToken = getEnv('GOOGLE_REFRESH_TOKEN')
+    const refreshToken = isRealEnvValue(envRefreshToken)
+      ? envRefreshToken
+      : isRealEnvValue(settings?.refreshToken)
+        ? settings.refreshToken
+        : ''
     oauth2Client.setCredentials({ refresh_token: refreshToken })
     return google.calendar({ version: 'v3', auth: oauth2Client })
   }

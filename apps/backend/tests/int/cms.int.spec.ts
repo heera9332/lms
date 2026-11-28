@@ -40,6 +40,57 @@ describe('LMS Backend CMS', () => {
     )
     expect(payload.email.name).toBe('nodemailer')
     expect(payload.collections.videos.config.upload?.mimeTypes).toEqual(['video/*'])
+    expect(payload.config.localization).toBeTruthy()
+    if (payload.config.localization) {
+      expect(payload.config.localization.defaultLocale).toBe('en')
+      expect(payload.config.localization.localeCodes).toEqual(['en', 'hi'])
+    }
+  })
+
+  it('supports English and Hindi localization with en default fallback', async () => {
+    const tag = await payload.create({
+      collection: 'tags',
+      locale: 'en',
+      data: {
+        name: 'Web Development',
+        slug: `web-dev-${Date.now()}`,
+        description: 'English tag description',
+      },
+      overrideAccess: true,
+    })
+
+    await payload.update({
+      collection: 'tags',
+      id: tag.id,
+      locale: 'hi',
+      data: {
+        name: 'वेब डेवलपमेंट',
+      },
+      overrideAccess: true,
+    })
+
+    const enDoc = await payload.findByID({
+      collection: 'tags',
+      id: tag.id,
+      locale: 'en',
+      overrideAccess: true,
+    })
+    const hiDoc = await payload.findByID({
+      collection: 'tags',
+      id: tag.id,
+      locale: 'hi',
+      overrideAccess: true,
+    })
+
+    expect(enDoc.name).toBe('Web Development')
+    expect(hiDoc.name).toBe('वेब डेवलपमेंट')
+    expect(hiDoc.description).toBe('English tag description')
+
+    await payload.delete({
+      collection: 'tags',
+      id: tag.id,
+      overrideAccess: true,
+    })
   })
 
   it('seeds WooCommerce-style email templates and renders placeholders', async () => {

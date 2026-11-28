@@ -132,7 +132,7 @@ export interface Config {
   db: {
     defaultIDType: number;
   };
-  fallbackLocale: null;
+  fallbackLocale: ('false' | 'none' | 'null') | false | null | ('en' | 'hi') | ('en' | 'hi')[];
   globals: {
     'email-settings': EmailSetting;
     'google-calendar-settings': GoogleCalendarSetting;
@@ -141,7 +141,7 @@ export interface Config {
     'email-settings': EmailSettingsSelect<false> | EmailSettingsSelect<true>;
     'google-calendar-settings': GoogleCalendarSettingsSelect<false> | GoogleCalendarSettingsSelect<true>;
   };
-  locale: null;
+  locale: 'en' | 'hi';
   widgets: {
     collections: CollectionsWidget;
   };
@@ -531,7 +531,7 @@ export interface Course {
   thumbnail?: (number | null) | Media;
   courseType: 'recorded' | 'live' | 'hybrid';
   difficultyLevel?: ('all-levels' | 'beginner' | 'intermediate' | 'advanced') | null;
-  language?: string | null;
+  language?: ('en' | 'hi') | null;
   estimatedDurationMinutes?: number | null;
   category?: (number | null) | Category;
   tags?: (number | Tag)[] | null;

@@ -21,6 +21,7 @@ export const Categories: CollectionConfig = {
       name: 'name',
       type: 'text',
       required: true,
+      localized: true,
     },
     slugField({
       useAsSlug: 'name',
@@ -28,6 +29,7 @@ export const Categories: CollectionConfig = {
     {
       name: 'description',
       type: 'textarea',
+      localized: true,
     },
     {
       name: 'parent',

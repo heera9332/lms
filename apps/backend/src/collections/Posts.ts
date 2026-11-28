@@ -40,6 +40,7 @@ export const Posts: CollectionConfig = {
       name: 'title',
       type: 'text',
       required: true,
+      localized: true,
     },
     slugField({
       useAsSlug: 'title',
@@ -47,11 +48,13 @@ export const Posts: CollectionConfig = {
     {
       name: 'excerpt',
       type: 'textarea',
+      localized: true,
     },
     {
       name: 'content',
       type: 'richText',
       editor: defaultLexical,
+      localized: true,
     },
     {
       name: 'featuredImage',

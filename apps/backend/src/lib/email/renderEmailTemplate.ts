@@ -5,6 +5,7 @@ import type { Payload } from 'payload'
 type LexicalData = Parameters<typeof convertLexicalToHTML>[0]['data']
 
 import type { EmailSetting, EmailTemplate, Media } from '../../payload-types'
+import { DEFAULT_LOCALE, type SupportedLocale } from '../localization'
 import {
   escapeHtml,
   replacePlaceholders,
@@ -153,8 +154,9 @@ export async function sendTemplatedEmail(args: {
   slug: string
   to?: string | string[]
   data?: EmailPlaceholderData
+  locale?: SupportedLocale
 }): Promise<{ sent: boolean; reason?: string }> {
-  const { payload, slug, to, data } = args
+  const { payload, slug, to, data, locale = DEFAULT_LOCALE } = args
 
   const { docs } = await payload.find({
     collection: 'email-templates',
@@ -162,6 +164,8 @@ export async function sendTemplatedEmail(args: {
       slug: { equals: slug },
     },
     limit: 1,
+    locale,
+    fallbackLocale: DEFAULT_LOCALE,
     overrideAccess: true,
   })
 
@@ -176,6 +180,8 @@ export async function sendTemplatedEmail(args: {
 
   const settings = await payload.findGlobal({
     slug: 'email-settings',
+    locale,
+    fallbackLocale: DEFAULT_LOCALE,
     overrideAccess: true,
   })
 

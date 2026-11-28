@@ -3,6 +3,7 @@ import { slugField } from 'payload'
 
 import { adminOrPublishedStatus, isAdmin, isAdminOrInstructor } from '../../access'
 import { defaultLexical } from '../../fields/defaultLexical'
+import { DEFAULT_LOCALE, LOCALE_SELECT_OPTIONS } from '../../lib/localization'
 
 const setPublishedAt: CollectionBeforeChangeHook = ({ data }) => {
   if (data?._status === 'published' && !data.publishedAt) {
@@ -46,6 +47,7 @@ export const Courses: CollectionConfig = {
               name: 'title',
               type: 'text',
               required: true,
+              localized: true,
             },
             slugField({
               useAsSlug: 'title',
@@ -53,11 +55,13 @@ export const Courses: CollectionConfig = {
             {
               name: 'shortDescription',
               type: 'textarea',
+              localized: true,
             },
             {
               name: 'description',
               type: 'richText',
               editor: defaultLexical,
+              localized: true,
             },
             {
               name: 'promoVideoUrl',
@@ -69,6 +73,7 @@ export const Courses: CollectionConfig = {
             {
               name: 'learningObjectives',
               type: 'array',
+              localized: true,
               fields: [
                 {
                   name: 'objective',
@@ -80,6 +85,7 @@ export const Courses: CollectionConfig = {
             {
               name: 'requirements',
               type: 'array',
+              localized: true,
               fields: [
                 {
                   name: 'requirement',
@@ -91,6 +97,7 @@ export const Courses: CollectionConfig = {
             {
               name: 'outcomes',
               type: 'array',
+              localized: true,
               fields: [
                 {
                   name: 'outcome',
@@ -255,8 +262,9 @@ export const Courses: CollectionConfig = {
     },
     {
       name: 'language',
-      type: 'text',
-      defaultValue: 'en',
+      type: 'select',
+      defaultValue: DEFAULT_LOCALE,
+      options: LOCALE_SELECT_OPTIONS,
       admin: {
         position: 'sidebar',
       },
