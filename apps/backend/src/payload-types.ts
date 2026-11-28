@@ -123,6 +123,55 @@ export interface UserAuthOperations {
  */
 export interface User {
   id: number;
+  role: 'admin' | 'student' | 'instructor';
+  displayName?: string | null;
+  profile?: {
+    firstName?: string | null;
+    lastName?: string | null;
+    avatar?: (number | null) | Media;
+    phone?: string | null;
+    /**
+     * Short biography or description of the user.
+     */
+    bio?: string | null;
+  };
+  billing?: {
+    firstName?: string | null;
+    lastName?: string | null;
+    company?: string | null;
+    address1?: string | null;
+    address2?: string | null;
+    city?: string | null;
+    state?: string | null;
+    postcode?: string | null;
+    country?: string | null;
+    email?: string | null;
+    phone?: string | null;
+  };
+  shipping?: {
+    firstName?: string | null;
+    lastName?: string | null;
+    company?: string | null;
+    address1?: string | null;
+    address2?: string | null;
+    city?: string | null;
+    state?: string | null;
+    postcode?: string | null;
+    country?: string | null;
+  };
+  status?: ('active' | 'blocked' | 'pending') | null;
+  /**
+   * Custom user metadata (non-indexed)
+   */
+  meta?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -241,6 +290,47 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  role?: T;
+  displayName?: T;
+  profile?:
+    | T
+    | {
+        firstName?: T;
+        lastName?: T;
+        avatar?: T;
+        phone?: T;
+        bio?: T;
+      };
+  billing?:
+    | T
+    | {
+        firstName?: T;
+        lastName?: T;
+        company?: T;
+        address1?: T;
+        address2?: T;
+        city?: T;
+        state?: T;
+        postcode?: T;
+        country?: T;
+        email?: T;
+        phone?: T;
+      };
+  shipping?:
+    | T
+    | {
+        firstName?: T;
+        lastName?: T;
+        company?: T;
+        address1?: T;
+        address2?: T;
+        city?: T;
+        state?: T;
+        postcode?: T;
+        country?: T;
+      };
+  status?: T;
+  meta?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
