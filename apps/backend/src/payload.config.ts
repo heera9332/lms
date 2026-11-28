@@ -29,9 +29,12 @@ import { Pages } from './collections/Pages'
 import { Posts } from './collections/Posts'
 import { Tags } from './collections/Tags'
 import { Users } from './collections/Users'
+import { Videos } from './collections/Videos'
 import { defaultLexical } from './fields/defaultLexical'
 import { EmailSettings } from './globals/EmailSettings'
+import { GoogleCalendarSettings } from './globals/GoogleCalendarSettings'
 import { seedDefaultEmailTemplates } from './lib/email/defaultTemplates'
+import { createGoogleOAuthUrl, exchangeGoogleOAuthCode } from './lib/google/calendar'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -54,8 +57,44 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Categories, Tags, Pages, Posts, Courses, CourseModules, Lessons, EmailTemplates],
-  globals: [EmailSettings],
+  collections: [Users, Media, Videos, Categories, Tags, Pages, Posts, Courses, CourseModules, Lessons, EmailTemplates],
+  globals: [EmailSettings, GoogleCalendarSettings],
+  endpoints: [
+    {
+      path: '/google/oauth/url',
+      method: 'get',
+      handler: async (req) => {
+        if (!req.user || req.user.role !== 'admin') {
+          return Response.json({ error: 'Unauthorized' }, { status: 403 })
+        }
+        try {
+          const url = createGoogleOAuthUrl()
+          return Response.json({ url })
+        } catch (err) {
+          const message = err instanceof Error ? err.message : 'Google OAuth2 is not configured.'
+          return Response.json({ error: message }, { status: 400 })
+        }
+      },
+    },
+    {
+      path: '/google/oauth/callback',
+      method: 'get',
+      handler: async (req) => {
+        const url = new URL(req.url || siteUrl)
+        const code = url.searchParams.get('code')
+        if (!code) {
+          return Response.json({ error: 'Missing OAuth authorization code' }, { status: 400 })
+        }
+        try {
+          await exchangeGoogleOAuthCode({ code, payload: req.payload })
+          return Response.redirect(`${siteUrl.replace(/\/$/, '')}/admin/globals/google-calendar-settings`, 302)
+        } catch (err) {
+          const message = err instanceof Error ? err.message : 'OAuth callback failed'
+          return Response.json({ error: message }, { status: 500 })
+        }
+      },
+    },
+  ],
   editor: defaultLexical,
   email: nodemailerAdapter({
     defaultFromAddress: getEnv('MAIL_FROM_ADDRESS', 'no-reply@example.com'),
@@ -190,9 +229,19 @@ export default buildConfig({
     }),
     s3Storage({
       enabled: s3Enabled,
+      clientUploads: {
+        access: ({ req: { user } }) => user?.role === 'admin' || user?.role === 'instructor',
+      },
       collections: {
         media: {
           prefix: 'media',
+        },
+        videos: {
+          prefix: 'videos',
+          signedDownloads: {
+            expiresIn: 7200,
+            shouldUseSignedURL: () => true,
+          },
         },
       },
       bucket: s3Bucket,

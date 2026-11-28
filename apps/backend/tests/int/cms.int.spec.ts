@@ -19,6 +19,7 @@ describe('LMS Backend CMS', () => {
       expect.arrayContaining([
         'users',
         'media',
+        'videos',
         'categories',
         'tags',
         'pages',
@@ -38,6 +39,7 @@ describe('LMS Backend CMS', () => {
       ]),
     )
     expect(payload.email.name).toBe('nodemailer')
+    expect(payload.collections.videos.config.upload?.mimeTypes).toEqual(['video/*'])
   })
 
   it('seeds WooCommerce-style email templates and renders placeholders', async () => {

@@ -74,6 +74,7 @@ export interface Config {
   collections: {
     users: User;
     media: Media;
+    videos: Video;
     categories: Category;
     tags: Tag;
     pages: Page;
@@ -106,6 +107,7 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    videos: VideosSelect<false> | VideosSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     tags: TagsSelect<false> | TagsSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
@@ -133,9 +135,11 @@ export interface Config {
   fallbackLocale: null;
   globals: {
     'email-settings': EmailSetting;
+    'google-calendar-settings': GoogleCalendarSetting;
   };
   globalsSelect: {
     'email-settings': EmailSettingsSelect<false> | EmailSettingsSelect<true>;
+    'google-calendar-settings': GoogleCalendarSettingsSelect<false> | GoogleCalendarSettingsSelect<true>;
   };
   locale: null;
   widgets: {
@@ -264,6 +268,34 @@ export interface Media {
   id: number;
   alt?: string | null;
   caption?: string | null;
+  prefix?: string | null;
+  _objectKey?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "videos".
+ */
+export interface Video {
+  id: number;
+  title: string;
+  description?: string | null;
+  durationSeconds?: number | null;
+  /**
+   * Allow unauthenticated preview playback for this video.
+   */
+  isFreePreview?: boolean | null;
+  uploadedBy?: (number | null) | User;
   prefix?: string | null;
   _objectKey?: string | null;
   updatedAt: string;
@@ -562,14 +594,46 @@ export interface Lesson {
     };
     [k: string]: unknown;
   } | null;
+  videoSource?: ('upload' | 'url') | null;
   /**
-   * Video URL or stream reference for recorded lessons.
+   * Recorded lesson video uploaded by instructor to private S3 storage.
+   */
+  video?: (number | null) | Video;
+  /**
+   * External video URL or stream reference for recorded lessons.
    */
   videoUrl?: string | null;
   /**
-   * Live class session URL (e.g. Google Meet link).
+   * Google Meet join URL (auto-generated via Google Calendar API when Live Session scheduling is saved).
    */
   liveMeetingUrl?: string | null;
+  liveSession?: {
+    /**
+     * Automatically create/update a Google Calendar event and Meet link when saving.
+     */
+    autoGenerateMeet?: boolean | null;
+    status?: ('scheduled' | 'live' | 'completed' | 'cancelled') | null;
+    scheduledAt?: string | null;
+    /**
+     * IANA timezone (e.g. UTC, Asia/Kolkata, America/New_York).
+     */
+    timeZone?: string | null;
+    /**
+     * Optional Google Calendar ID override (defaults to settings / primary).
+     */
+    calendarId?: string | null;
+    attendeeEmails?:
+      | {
+          email: string;
+          id?: string | null;
+        }[]
+      | null;
+    googleEventId?: string | null;
+    googleConferenceId?: string | null;
+    googleCalendarLink?: string | null;
+    lastSyncedAt?: string | null;
+    syncError?: string | null;
+  };
   resource?: (number | null) | Media;
   externalUrl?: string | null;
   lessonType: 'video' | 'live' | 'article' | 'pdf' | 'resource' | 'quiz' | 'assignment' | 'external';
@@ -972,6 +1036,10 @@ export interface PayloadLockedDocument {
         value: number | Media;
       } | null)
     | ({
+        relationTo: 'videos';
+        value: number | Video;
+      } | null)
+    | ({
         relationTo: 'categories';
         value: number | Category;
       } | null)
@@ -1164,6 +1232,30 @@ export interface MediaSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "videos_select".
+ */
+export interface VideosSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  durationSeconds?: T;
+  isFreePreview?: T;
+  uploadedBy?: T;
+  prefix?: T;
+  _objectKey?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "categories_select".
  */
 export interface CategoriesSelect<T extends boolean = true> {
@@ -1332,8 +1424,30 @@ export interface LessonsSelect<T extends boolean = true> {
   slug?: T;
   description?: T;
   content?: T;
+  videoSource?: T;
+  video?: T;
   videoUrl?: T;
   liveMeetingUrl?: T;
+  liveSession?:
+    | T
+    | {
+        autoGenerateMeet?: T;
+        status?: T;
+        scheduledAt?: T;
+        timeZone?: T;
+        calendarId?: T;
+        attendeeEmails?:
+          | T
+          | {
+              email?: T;
+              id?: T;
+            };
+        googleEventId?: T;
+        googleConferenceId?: T;
+        googleCalendarLink?: T;
+        lastSyncedAt?: T;
+        syncError?: T;
+      };
   resource?: T;
   externalUrl?: T;
   lessonType?: T;
@@ -1635,6 +1749,37 @@ export interface EmailSetting {
   createdAt?: string | null;
 }
 /**
+ * Configure Google Calendar OAuth2 / Service Account integration for automatic Google Meet link generation on live lessons.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "google-calendar-settings".
+ */
+export interface GoogleCalendarSetting {
+  id: number;
+  /**
+   * Enable Google Calendar sync for live lessons. Credentials can be connected via /api/google/oauth/url or GOOGLE_* environment variables.
+   */
+  enabled?: boolean | null;
+  /**
+   * Target Google Calendar ID (defaults to "primary").
+   */
+  calendarId?: string | null;
+  /**
+   * Default IANA timezone (e.g. UTC, Asia/Kolkata, America/New_York).
+   */
+  defaultTimeZone?: string | null;
+  /**
+   * Google account connected via OAuth2.
+   */
+  connectedEmail?: string | null;
+  /**
+   * OAuth2 refresh token (automatically populated by /api/google/oauth/callback or overridden by GOOGLE_REFRESH_TOKEN).
+   */
+  refreshToken?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "email-settings_select".
  */
@@ -1648,6 +1793,20 @@ export interface EmailSettingsSelect<T extends boolean = true> {
   backgroundColor?: T;
   bodyBackgroundColor?: T;
   bodyTextColor?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "google-calendar-settings_select".
+ */
+export interface GoogleCalendarSettingsSelect<T extends boolean = true> {
+  enabled?: T;
+  calendarId?: T;
+  defaultTimeZone?: T;
+  connectedEmail?: T;
+  refreshToken?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
