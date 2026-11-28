@@ -1,4 +1,5 @@
 import React from 'react'
+import { TooltipProvider } from '@lms/ui/components/tooltip'
 import './styles.css'
 
 export const metadata = {
@@ -12,7 +13,9 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body>
-        <main>{children}</main>
+        <TooltipProvider>
+          <main>{children}</main>
+        </TooltipProvider>
       </body>
     </html>
   )
